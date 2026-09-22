@@ -1,5 +1,7 @@
 # AgendaSaaS
 
+> Este projeto foi sucedido pelo **Horário**, um rebuild completo em TypeScript com interface real, disponibilidade configurável (horário recorrente + exceções por data) e garantia de não-sobreposição de agendamentos aplicada pelo próprio banco de dados.
+
 API backend de um SaaS de agendamento multi-tenant. Cada negócio (salão, clínica, prestador de serviço) cadastra sua conta, define os serviços que oferece, e os clientes finais agendam horário sem precisar criar login.
 
 Projeto feito como peça de portfólio para demonstrar arquitetura de backend, não só CRUD — separação de camadas, regra de negócio isolada e testável, autenticação com JWT, migrações versionadas e testes automatizados cobrindo os casos que realmente importam (conflito de horário, limite de plano).
