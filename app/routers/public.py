@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
+from app.core.ratelimit import limiter
 from app.models.appointment import Appointment
 from app.models.service import Service
 from app.models.tenant import Tenant
@@ -20,18 +21,27 @@ def _get_tenant_or_404(slug: str, db: Session) -> Tenant:
 
 
 @router.get("/{slug}/services", response_model=list[ServiceOut])
-def list_public_services(slug: str, db: Session = Depends(get_db)) -> list[Service]:
+def list_public_services(
+    slug: str,
+    db: Session = Depends(get_db),
+    limit: int = Query(100, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+) -> list[Service]:
     tenant = _get_tenant_or_404(slug, db)
     return (
         db.query(Service)
         .filter(Service.tenant_id == tenant.id, Service.active.is_(True))
+        .order_by(Service.id)
+        .limit(limit)
+        .offset(offset)
         .all()
     )
 
 
 @router.post("/{slug}/book", response_model=AppointmentOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 def book_appointment(
-    slug: str, payload: AppointmentCreate, db: Session = Depends(get_db)
+    request: Request, slug: str, payload: AppointmentCreate, db: Session = Depends(get_db)
 ) -> Appointment:
     tenant = _get_tenant_or_404(slug, db)
 

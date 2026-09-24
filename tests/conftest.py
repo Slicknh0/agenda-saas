@@ -1,3 +1,11 @@
+import os
+
+# Configura o ambiente ANTES de importar a app: um segredo forte satisfaz a
+# validacao de boot e o rate limiting fica desligado para os testes nao
+# dependerem de contagem por IP entre casos.
+os.environ.setdefault("JWT_SECRET", "test-secret-0123456789-0123456789-abcd")
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine

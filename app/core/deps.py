@@ -26,7 +26,13 @@ def get_current_user(
     if user_id is None:
         raise credentials_error
 
-    user = db.get(User, int(user_id))
+    # Um token com 'sub' nao numerico nao deve virar 500; trata como invalido.
+    try:
+        user_pk = int(user_id)
+    except (TypeError, ValueError) as exc:
+        raise credentials_error from exc
+
+    user = db.get(User, user_pk)
     if user is None:
         raise credentials_error
     return user

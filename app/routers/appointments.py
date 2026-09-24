@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -12,9 +12,19 @@ router = APIRouter(prefix="/appointments", tags=["appointments"])
 
 @router.get("", response_model=list[AppointmentOut])
 def list_appointments(
-    user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
 ) -> list[Appointment]:
-    return db.query(Appointment).filter(Appointment.tenant_id == user.tenant_id).all()
+    return (
+        db.query(Appointment)
+        .filter(Appointment.tenant_id == user.tenant_id)
+        .order_by(Appointment.starts_at)
+        .limit(limit)
+        .offset(offset)
+        .all()
+    )
 
 
 @router.patch("/{appointment_id}/cancel", response_model=AppointmentOut)
